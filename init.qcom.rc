@@ -12,7 +12,7 @@ on boot
 
 # cpufreq configurations
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 245760
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ondemand
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor powersave
     write /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate 20000
     write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 76
     write /sys/devices/system/cpu/cpufreq/ondemand/down_threshold 60
@@ -83,12 +83,11 @@ on boot
 
 
 on property:init.svc.hcid=running
-    write /sys/devices/virtual/bluetooth/hci0/idle_timeout 7000
+    write /sys/devices/virtual/bluetooth/hci0/idle_timeout 0
 
 service hci_qcomm_init /system/bin/log -t qcom-bluetooth -p i "hci_qcomm_init service requested"
     user bluetooth
     group bluetooth net_bt_admin
-    disabled
     oneshot
 
 service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyHSUSB0 &
@@ -98,7 +97,6 @@ service qmuxd /system/bin/qmuxd &
 service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
     user bluetooth
     group qcom_oncrpc bluetooth net_bt_admin system
-    disabled
     oneshot
 
 service hcid /system/bin/hcid -s -n -f /etc/bluez/hcid.conf
@@ -107,18 +105,15 @@ service hcid /system/bin/hcid -s -n -f /etc/bluez/hcid.conf
     # init.rc does not yet support applying capabilities, so run as root and
     # let hcid drop uid to bluetooth with the right linux capabilities
     group bluetooth net_bt_admin misc
-    disabled
 
 service bm3obexd /system/bin/dbus_bt -i /etc/bm3
     user root
     group bluetooth net_bt_admin
-    disabled
     oneshot
 
 service bm3OPP /system/bin/sdptool add --channel=4 OPUSH
     user bluetooth
     group bluetooth net_bt_admin
-    disabled
     oneshot
 
 # START HUAWEI RPC SERVICE
@@ -130,20 +125,17 @@ service oem_rpc_svc /system/bin/oem_rpc_svc
 service wpa_supplicant /system/bin/wpa_supplicant -Dawext -ieth0 -W -c/data/misc/wifi/wpa_supplicant.conf
     group wifi inet
     socket wpa_eth0 dgram 660 wifi wifi
-    disabled
     oneshot
 
 service dhcpcd_eth0 /system/bin/dhcpcd -B
-    disabled 
-    oneshot
+disabled
+oneshot
 
-#service wlan_tool /system/bin/wlan_tool 
-#	disabled
-#	oneshot
+service wlan_tool /system/bin/wlan_tool 
+oneshot
 
-#service abtfilt /system/bin/abtfilt -c -d -z -n
-#   disabled
-#    oneshot
+service abtfilt /system/bin/abtfilt -c -d -z -n
+oneshot
 
 service akmd /system/bin/akmd2
     user compass
